@@ -412,30 +412,145 @@ const Student = {
   },
 };
 
-// ============ Empresa (aún sin demo) ============
-const Company = {
-  loadDashboard() {
-    $('#dashboard-cards').innerHTML = `
-      <div class="metric"><span class="value">—</span><span class="label">Vacantes activas</span></div>
-      <div class="metric"><span class="value">—</span><span class="label">Postulaciones recibidas</span></div>
-      <div class="metric"><span class="value">—</span><span class="label">Prácticas en curso</span></div>
-    `;
-  },
-  loadMisVacantes() { $('#mis-vacantes-list').innerHTML = `<p class="muted">Aún no has publicado vacantes.</p>`; },
-  loadPostulacionesRecibidas() { $('#postulaciones-recibidas-list').innerHTML = `<p class="muted">Sin postulaciones.</p>`; },
-  loadPerfil() { $('#perfil-fields').innerHTML = `<p class="muted">Perfil de empresa pendiente.</p>`; },
+
+// ============ Empresa (Con datos mock) ============
+const MOCK_EMPRESA = {
+  nombre_legal: 'TechCorp S.A.',
+  ruc: '123456-1-2023',
+  sector: 'Tecnología',
+  estado: 'validada', // Cambia a 'pendiente' para ver el otro estado
+  vacantes: [
+    { id: 'v1', titulo: 'Desarrollador Web Jr', estado: 'publicada', postulaciones: 5, modalidad: 'remota' },
+    { id: 'v2', titulo: 'Soporte Técnico', estado: 'publicada', postulaciones: 2, modalidad: 'presencial' },
+    { id: 'v3', titulo: 'Practicante QA', estado: 'borrador', postulaciones: 0, modalidad: 'hibrida' },
+  ],
+  postulaciones: [
+    { id: 'p1', estudiante: 'Ana Pérez', carrera: 'Lic. en TI', vacante: 'Desarrollador Web Jr', estado: 'postulada', fecha: '2024-11-01' },
+    { id: 'p2', estudiante: 'Carlos Ruiz', carrera: 'Lic. en TI', vacante: 'Desarrollador Web Jr', estado: 'postulada', fecha: '2024-10-30' },
+    { id: 'p3', estudiante: 'María Gómez', carrera: 'Ing. de Sistemas', vacante: 'Soporte Técnico', estado: 'aceptada', fecha: '2024-10-25' },
+  ]
 };
 
-// ============ Profesor (aún sin demo) ============
-const Professor = {
+const Company = {
   loadDashboard() {
+    const e = MOCK_EMPRESA;
+    
+    // Si la empresa no está validada, mostrar un aviso en el dashboard
+    const alerta = e.estado === 'pendiente' ? `
+      <div class="card" style="grid-column: 1/-1; border-left: 4px solid var(--warning);">
+        <h3>Cuenta en revisión</h3>
+        <p class="muted small">Tu empresa está pendiente de validación por la universidad. Podrás publicar vacantes una vez seas aprobado.</p>
+      </div>
+    ` : '';
+
+    const pendientes = e.postulaciones.filter(p => p.estado === 'postulada').length;
+
     $('#dashboard-cards').innerHTML = `
-      <div class="metric"><span class="value">—</span><span class="label">Prácticas asignadas</span></div>
-      <div class="metric"><span class="value">—</span><span class="label">Estudiantes</span></div>
+      ${alerta}
+      <div class="metric hero">
+        <span class="value">Panel de ${esc(e.nombre_legal)}</span>
+        <span class="label">Estado de la cuenta: <span class="badge ${e.estado === 'validada' ? 'success' : 'warning'}">${e.estado}</span></span>
+      </div>
+      
+      <div class="metric"><span class="value">${e.vacantes.filter(v => v.estado === 'publicada').length}</span><span class="label">Vacantes activas</span></div>
+      <div class="metric"><span class="value">${pendientes}</span><span class="label">Postulaciones por revisar</span></div>
+      <div class="metric"><span class="value">1</span><span class="label">Prácticas en curso</span></div>
+
+      <div class="card" style="grid-column:1/-1">
+        <h3>Últimas postulaciones recibidas</h3>
+        <ul class="list">
+          ${e.postulaciones.slice(0, 3).map(p => `
+            <li>
+              <strong>${esc(p.estudiante)}</strong> se postuló a <em>${esc(p.vacante)}</em>
+              ${badgeEstado(p.estado)}
+            </li>
+          `).join('')}
+        </ul>
+        <div><button class="btn" data-go="postulaciones-recibidas">Ver todas las postulaciones</button></div>
+      </div>
+    `;
+    bindAcciones($('#dashboard-cards'));
+  },
+
+  loadMisVacantes() {
+    const e = MOCK_EMPRESA;
+    $('#mis-vacantes-list').innerHTML = e.vacantes.map(v => `
+      <article class="vacante-card">
+        <header>
+          <h4>${esc(v.titulo)}</h4>
+          <span class="badge ${v.estado === 'publicada' ? 'success' : 'warning'}">${esc(v.estado)}</span>
+        </header>
+        <p class="small muted">Modalidad: ${esc(v.modalidad)}</p>
+        <p class="small"><strong>${v.postulaciones}</strong> postulaciones recibidas</p>
+        <div class="actions">
+          <button class="btn btn-ghost small">Editar</button>
+          <button class="btn btn-ghost small" style="color: var(--danger)">Cerrar</button>
+        </div>
+      </article>
+    `).join('');
+  },
+
+  loadPostulacionesRecibidas() {
+    const e = MOCK_EMPRESA;
+    const filas = e.postulaciones.map(p => `
+      <tr>
+        <td><strong>${esc(p.estudiante)}</strong><br><span class="small muted">${esc(p.carrera)}</span></td>
+        <td>${esc(p.vacante)}</td>
+        <td>${esc(p.fecha)}</td>
+        <td>${badgeEstado(p.estado)}</td>
+        <td>
+          ${p.estado === 'postulada' ? `
+            <button class="btn btn-primary small" data-aceptar="${p.id}">Aceptar</button>
+            <button class="btn btn-danger small" data-rechazar="${p.id}">Rechazar</button>
+          ` : '—'}
+        </td>
+      </tr>
+    `).join('');
+
+    $('#postulaciones-recibidas-list').innerHTML = `
+      <div class="card">
+        <h3>Postulaciones Recibidas</h3>
+        <table class="table">
+          <thead><tr><th>Estudiante</th><th>Vacante</th><th>Fecha</th><th>Estado</th><th>Acciones</th></tr></thead>
+          <tbody>${filas || '<tr><td colspan="5" class="muted">No hay postulaciones aún.</td></tr>'}</tbody>
+        </table>
+      </div>
+    `;
+
+    // Lógica de aceptar/rechazar simulada
+    $$('[data-aceptar]', $('#postulaciones-recibidas-list')).forEach(btn => {
+      btn.addEventListener('click', (ev) => {
+        const td = ev.target.parentElement;
+        td.innerHTML = '<span class="badge success">Aceptada</span>';
+        alert('Postulación aceptada (Demo). Al conectar Supabase, se creará la práctica automáticamente.');
+      });
+    });
+
+    $$('[data-rechazar]', $('#postulaciones-recibidas-list')).forEach(btn => {
+      btn.addEventListener('click', (ev) => {
+        const td = ev.target.parentElement;
+        td.innerHTML = '<span class="badge danger">Rechazada</span>';
+      });
+    });
+  },
+
+  loadPerfil() {
+    const e = MOCK_EMPRESA;
+    $('#perfil-fields').innerHTML = `
+      <label>Nombre Legal
+        <input type="text" value="${esc(e.nombre_legal)}">
+      </label>
+      <label>RUC
+        <input type="text" value="${esc(e.ruc)}">
+      </label>
+      <label>Sector
+        <input type="text" value="${esc(e.sector)}">
+      </label>
+      <label>Estado de Validación
+        <input type="text" value="${esc(e.estado)}" disabled style="text-transform: capitalize; background: var(--bg);">
+      </label>
     `;
   },
-  loadPracticas() { $('#practicas-list').innerHTML = `<p class="muted">Sin prácticas asignadas.</p>`; },
-  loadPerfil() { $('#perfil-fields').innerHTML = `<p class="muted">Perfil pendiente.</p>`; },
 };
 
 // ============ Admin (aún sin demo) ============
@@ -567,6 +682,21 @@ function bindEvents() {
 // ============ Bootstrap ============
 document.addEventListener('DOMContentLoaded', () => {
   bindEvents();
+  
+  $('#btn-demo-empresa')?.addEventListener('click', () => {
+  state.session = { access_token: 'demo-empresa' };
+  state.user = { email: 'empresa@demo.com', nombre: MOCK_EMPRESA.nombre_legal };
+  state.rol = 'empresa';
+  
+  $('#user-email').textContent = state.user.email;
+  $('#role-badge').textContent = 'Empresa';
+  $('#role-badge').className = 'badge warning'; // Color amarillo para diferenciar
+  
+  hide($('#auth-shell'));
+  show($('#app-shell'));
+  renderNav();
+  navigate('dashboard');
+});
 
   // Sin sesión → mostrar login
   hide($('#app-shell'));
