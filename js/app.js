@@ -645,6 +645,100 @@ const Admin = {
   },
 };
 
+// ============ Profesor (Con datos mock) ============
+const MOCK_PROFESOR = {
+  nombre: 'Prof. Luis Gómez',
+  facultad: 'Facultad de Ingeniería',
+  area: 'Tecnología de la Información',
+  practicas: [
+    { id: 'pr1', estudiante: 'Ana Pérez', empresa: 'DataCorp', vacante: 'Analista de Datos', estado: 'en_curso', horas: 40, inicio: '2024-11-05' },
+    { id: 'pr2', estudiante: 'Carlos Ruiz', empresa: 'TechCorp S.A.', vacante: 'Desarrollador Web Jr', estado: 'en_curso', horas: 12, inicio: '2024-11-10' },
+    { id: 'pr3', estudiante: 'María Gómez', empresa: 'InnovaGroup', vacante: 'Soporte Técnico', estado: 'pendiente_inicio', horas: 0, inicio: '2024-11-20' }
+  ]
+};
+
+const Professor = {
+  loadDashboard() {
+    const p = MOCK_PROFESOR;
+    const enCurso = p.practicas.filter(pr => pr.estado === 'en_curso').length;
+    const pendientes = p.practicas.filter(pr => pr.estado === 'pendiente_inicio').length;
+
+    $('#dashboard-cards').innerHTML = `
+      <div class="metric hero">
+        <span class="value">Bienvenido, ${esc(p.nombre)} 👨‍🏫</span>
+        <span class="label">${esc(p.facultad)} · ${esc(p.area)}</span>
+      </div>
+      
+      <div class="metric"><span class="value">${p.practicas.length}</span><span class="label">Prácticas asignadas</span></div>
+      <div class="metric"><span class="value">${enCurso}</span><span class="label">En curso</span></div>
+      <div class="metric"><span class="value">${pendientes}</span><span class="label">Por iniciar</span></div>
+
+      <div class="card" style="grid-column:1/-1">
+        <h3>Mis practicantes</h3>
+        <ul class="list">
+          ${p.practicas.map(pr => `
+            <li>
+              <strong>${esc(pr.estudiante)}</strong> en ${esc(pr.empresa)}
+              ${badgeEstado(pr.estado)}
+              <span class="small muted" style="margin-left: auto;">${pr.horas} hrs</span>
+            </li>
+          `).join('')}
+        </ul>
+        <div><button class="btn" data-go="practicas">Ver detalle de prácticas</button></div>
+      </div>
+    `;
+    bindAcciones($('#dashboard-cards'));
+  },
+
+  loadPracticas() {
+    const p = MOCK_PROFESOR;
+    const filas = p.practicas.map(pr => `
+      <tr>
+        <td><strong>${esc(pr.estudiante)}</strong></td>
+        <td>${esc(pr.empresa)}<br><span class="small muted">${esc(pr.vacante)}</span></td>
+        <td>${esc(pr.inicio)}</td>
+        <td>${pr.horas} hrs</td>
+        <td>${badgeEstado(pr.estado)}</td>
+        <td>
+          <button class="btn btn-ghost small" data-ver-practica="${pr.id}">Gestionar</button>
+        </td>
+      </tr>
+    `).join('');
+
+    $('#practicas-list').innerHTML = `
+      <div class="card">
+        <h3>Gestión de Prácticas Asignadas</h3>
+        <table class="table">
+          <thead><tr><th>Estudiante</th><th>Empresa / Vacante</th><th>Inicio</th><th>Horas</th><th>Estado</th><th></th></tr></thead>
+          <tbody>${filas}</tbody>
+        </table>
+      </div>
+    `;
+
+    // Simulación de gestión de práctica
+    $$('[data-ver-practica]', $('#practicas-list')).forEach(btn => {
+      btn.addEventListener('click', () => {
+        alert('Demo: Aquí se abriría el panel para registrar horas, aprobar informes y dejar observaciones del estudiante.');
+      });
+    });
+  },
+
+  loadPerfil() {
+    const p = MOCK_PROFESOR;
+    $('#perfil-fields').innerHTML = `
+      <label>Nombre Completo
+        <input type="text" value="${esc(p.nombre)}" disabled>
+      </label>
+      <label>Facultad
+        <input type="text" value="${esc(p.facultad)}" disabled>
+      </label>
+      <label>Área de Especialidad
+        <input type="text" value="${esc(p.area)}" disabled>
+      </label>
+    `;
+  },
+};
+
 // ============ Asistencia IA (mock) ============
 const AI = {
   async generarCorreo() {
