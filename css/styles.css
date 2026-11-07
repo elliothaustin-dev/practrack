@@ -24,7 +24,7 @@
 
 body {
   font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
-  background: var(--bg);
+  background: #eef2f5; /* Gris azulado muy sutil */
   color: var(--text);
   min-height: 100vh;
   line-height: 1.5;
@@ -86,10 +86,13 @@ a:hover { text-decoration: underline; color: var(--primary-hover); }
 .brand {
   font-weight: 700;
   font-size: 1.15rem;
-  color: var(--primary); 
-  padding: 0 .5rem;
-  border-left: 4px solid var(--accent); /* Línea roja */
+  color: #ffffff;
+  background: var(--primary); /* Fondo verde UNACHI */
+  padding: 1rem;
+  border-radius: 8px;
   line-height: 1.2;
+  margin-bottom: 1rem;
+  box-shadow: 0 4px 6px rgba(27, 106, 59, 0.2);
 }
 
 .topbar { display: flex; align-items: center; justify-content: space-between; gap: 1rem; }
@@ -296,11 +299,22 @@ textarea { resize: vertical; font-family: inherit; }
   display: grid;
   gap: .25rem;
   box-shadow: var(--shadow);
+  border-top: 3px solid var(--border); /* Línea por defecto */
 }
-.metric .value { font-size: 1.6rem; font-weight: 700; color: var(--primary); }
-.metric .label { font-size: .85rem; color: var(--muted); }
-.metric.hero { grid-column: 1 / -1; gap: .5rem; }
-.metric.hero .value { font-size: 1.4rem; }
+
+/* Pintamos la primera con verde, la segunda con rojo y la tercera con dorado */
+.metric:nth-child(2) { border-top-color: var(--primary); }
+.metric:nth-child(3) { border-top-color: var(--accent); }
+.metric:nth-child(4) { border-top-color: var(--warning); }
+
+.metric.hero { 
+  grid-column: 1 / -1; 
+  gap: .5rem;
+  background: #f0f7f2; /* Un fondo verde muy, muy clarito */
+  border-left: 5px solid var(--primary); /* Línea gruesa verde a la izquierda */
+  border-top: 1px solid var(--border); /* Quitamos la línea superior que pusimos arriba */
+}
+.metric.hero .value { font-size: 1.4rem; color: var(--primary); }
 
 /* Recomendaciones */
 .reco-score {
