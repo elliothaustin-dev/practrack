@@ -553,22 +553,94 @@ const Company = {
   },
 };
 
-// ============ Admin (aún sin demo) ============
+// ============ Admin (Con datos mock) ============
+const MOCK_ADMIN = {
+  empresas_pendientes: [
+    { id: 'e1', nombre: 'Innovatech Solutions', ruc: '888-123', fecha: '2024-11-05' },
+    { id: 'e2', nombre: 'Consultores Asociados', ruc: '999-456', fecha: '2024-11-06' }
+  ],
+  usuarios: [
+    { id: 'u1', nombre: 'Ana Pérez', email: 'ana@demo.com', rol: 'estudiante', estado: 'activo' },
+    { id: 'u2', nombre: 'TechCorp S.A.', email: 'empresa@demo.com', rol: 'empresa', estado: 'validada' },
+    { id: 'u3', nombre: 'Carlos Ruiz', email: 'carlos@demo.com', rol: 'estudiante', estado: 'activo' }
+  ]
+};
+
 const Admin = {
   loadDashboard() {
     $('#dashboard-cards').innerHTML = `
-      <div class="metric"><span class="value">—</span><span class="label">Empresas por validar</span></div>
-      <div class="metric"><span class="value">—</span><span class="label">Usuarios activos</span></div>
-      <div class="metric"><span class="value">—</span><span class="label">Vacantes publicadas</span></div>
+      <div class="metric hero">
+        <span class="value">Panel de Control Administrativo</span>
+        <span class="label">Supervisión general de PracTrack</span>
+      </div>
+      <div class="metric">
+        <span class="value" style="color: var(--danger);">${MOCK_ADMIN.empresas_pendientes.length}</span>
+        <span class="label">Empresas por validar</span>
+      </div>
+      <div class="metric"><span class="value">${MOCK_ADMIN.usuarios.length}</span><span class="label">Usuarios registrados</span></div>
+      <div class="metric"><span class="value">12</span><span class="label">Vacantes publicadas</span></div>
+
+      <div class="card" style="grid-column: 1/-1; border-left: 4px solid var(--warning);">
+        <h3>Acción requerida</h3>
+        <p class="muted small">Tienes ${MOCK_ADMIN.empresas_pendientes.length} empresas esperando aprobación para publicar vacantes.</p>
+        <div class="row">
+          <button class="btn btn-primary" data-go="admin-empresas">Revisar empresas</button>
+        </div>
+      </div>
     `;
+    bindAcciones($('#dashboard-cards'));
   },
-  loadEmpresasPendientes() { $('#admin-empresas-list').innerHTML = `<p class="muted">Sin empresas pendientes.</p>`; },
-  loadUsuarios() { $('#admin-usuarios-table tbody').innerHTML = `<tr><td colspan="4" class="muted">Cargando usuarios…</td></tr>`; },
+
+  loadEmpresasPendientes() {
+    const cont = $('#admin-empresas-list');
+    if (MOCK_ADMIN.empresas_pendientes.length === 0) {
+      cont.innerHTML = `<div class="card"><p class="muted">No hay empresas pendientes de validación. 🎉</p></div>`;
+      return;
+    }
+
+    cont.innerHTML = MOCK_ADMIN.empresas_pendientes.map(e => `
+      <div class="card">
+        <h3>${esc(e.nombre)}</h3>
+        <p class="small muted">RUC: ${esc(e.ruc)} · Solicitó: ${esc(e.fecha)}</p>
+        <div class="row">
+          <button class="btn btn-primary" data-validar="${e.id}">Aprobar</button>
+          <button class="btn btn-danger" data-rechazar-empresa="${e.id}">Rechazar</button>
+        </div>
+      </div>
+    `).join('');
+
+    // Lógica de validación simulada
+    $$('[data-validar]', cont).forEach(btn => {
+      btn.addEventListener('click', (ev) => {
+        ev.target.closest('.card').innerHTML = `<p class="badge success">Empresa Aprobada</p>`;
+        alert('Empresa aprobada. Ahora puede publicar vacantes.');
+      });
+    });
+
+    $$('[data-rechazar-empresa]', cont).forEach(btn => {
+      btn.addEventListener('click', (ev) => {
+        ev.target.closest('.card').innerHTML = `<p class="badge danger">Empresa Rechazada</p>`;
+      });
+    });
+  },
+
+  loadUsuarios() {
+    const tbody = $('#admin-usuarios-table tbody');
+    tbody.innerHTML = MOCK_ADMIN.usuarios.map(u => `
+      <tr>
+        <td><strong>${esc(u.nombre)}</strong></td>
+        <td>${esc(u.email)}</td>
+        <td><span class="badge">${esc(u.rol)}</span></td>
+        <td><span class="badge ${u.estado === 'activo' || u.estado === 'validada' ? 'success' : 'warning'}">${esc(u.estado)}</span></td>
+      </tr>
+    `).join('');
+  },
+
   loadReportes() {
     $('#reportes-cards').innerHTML = `
-      <div class="metric"><span class="value">—</span><span class="label">Postulaciones por área</span></div>
-      <div class="metric"><span class="value">—</span><span class="label">Prácticas en curso</span></div>
-      <div class="metric"><span class="value">—</span><span class="label">Uso del módulo IA</span></div>
+      <div class="metric"><span class="value">45</span><span class="label">Postulaciones totales</span></div>
+      <div class="metric"><span class="value">12</span><span class="label">Prácticas en curso</span></div>
+      <div class="metric"><span class="value">156</span><span class="label">Correos generados con IA</span></div>
     `;
   },
 };
@@ -691,6 +763,21 @@ document.addEventListener('DOMContentLoaded', () => {
   $('#user-email').textContent = state.user.email;
   $('#role-badge').textContent = 'Empresa';
   $('#role-badge').className = 'badge warning'; // Color amarillo para diferenciar
+  
+  hide($('#auth-shell'));
+  show($('#app-shell'));
+  renderNav();
+  navigate('dashboard');
+});
+  
+  $('#btn-demo-admin')?.addEventListener('click', () => {
+  state.session = { access_token: 'demo-admin' };
+  state.user = { email: 'admin@unachi.ac.pa', nombre: 'Administrador UNACHI' };
+  state.rol = 'admin';
+  
+  $('#user-email').textContent = state.user.email;
+  $('#role-badge').textContent = 'Admin';
+  $('#role-badge').className = 'badge danger'; // Color rojo para el admin
   
   hide($('#auth-shell'));
   show($('#app-shell'));
