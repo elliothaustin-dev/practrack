@@ -84,15 +84,15 @@ a:hover { text-decoration: underline; color: var(--primary-hover); }
 }
 
 .brand {
-  font-weight: 700;
-  font-size: 1.15rem;
-  color: #ffffff;
-  background: var(--primary); /* Fondo verde UNACHI */
-  padding: 1rem;
-  border-radius: 8px;
+  font-weight: 800;
+  font-size: 1.3rem;
+  color: var(--primary); /* Texto verde */
+  padding: 0 0.5rem 0.5rem 0.5rem;
+  border-left: 4px solid var(--accent); /* Línea roja institucional */
   line-height: 1.2;
-  margin-bottom: 1rem;
-  box-shadow: 0 4px 6px rgba(27, 106, 59, 0.2);
+  margin-bottom: 0.5rem;
+  background: transparent;
+  box-shadow: none;
 }
 
 .topbar { display: flex; align-items: center; justify-content: space-between; gap: 1rem; }
