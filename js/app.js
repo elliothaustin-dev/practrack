@@ -879,6 +879,21 @@ document.addEventListener('DOMContentLoaded', () => {
   navigate('dashboard');
 });
 
+$('#btn-demo-profesor')?.addEventListener('click', () => {
+  state.session = { access_token: 'demo-profesor' };
+  state.user = { email: 'luis.gomez@unachi.ac.pa', nombre: MOCK_PROFESOR.nombre };
+  state.rol = 'profesor';
+  
+  $('#user-email').textContent = state.user.email;
+  $('#role-badge').textContent = 'Profesor';
+  $('#role-badge').className = 'badge success'; // Verde para el profe
+  
+  hide($('#auth-shell'));
+  show($('#app-shell'));
+  renderNav();
+  navigate('dashboard');
+});
+  
   // Sin sesión → mostrar login
   hide($('#app-shell'));
   show($('#auth-shell'));
